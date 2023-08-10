@@ -37,10 +37,41 @@ export const createClient = async (clientId: number, name: string) => {
     }
   };
   
+export const fetchBillsByCategory = async (category: string): Promise<PendingBill[]> => {
+try {
+    const response = await axios.get(`${API_BASE_URL}/billing/search?category=${category}`);
+    return response.data;
+} catch (error) {
+    throw error;
+}
+};
 
 export const fetchPendingBillsById = async (clientId: number) => {
   try {
     const response = await axios.get(`/billing/pending?clientId=${clientId}`);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const registerBill = async (clientId: number, category: string, period: number, amount: number) => {
+  try {
+    const response = await axios.post(`${API_BASE_URL}/billing/bills`, {
+      clientId,
+      category,
+      period,
+      amount,
+    });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const fetchBillsByClientId = async (clientId: number): Promise<PendingBill[]> => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/billing/client/${clientId}`);
     return response.data;
   } catch (error) {
     throw error;

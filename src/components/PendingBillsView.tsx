@@ -1,4 +1,3 @@
-// components/PendingBillsView.tsx
 import React, { useState } from 'react';
 import { fetchPendingBills } from '../services/api';
 import { PendingBill } from '../models/Bill';

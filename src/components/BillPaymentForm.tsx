@@ -28,7 +28,7 @@ const BillPaymentForm: React.FC = () => {
     if (paymentStatus) {
       const timeout = setTimeout(() => {
         setPaymentStatus(null);
-      }, 5000); // Reset the payment status after 5 seconds
+      }, 5000); 
       return () => clearTimeout(timeout);
     }
   }, [paymentStatus]);
