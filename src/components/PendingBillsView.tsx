@@ -80,9 +80,7 @@ const PendingBillsView: React.FC = () => {
           </ul>
         </div>
       )}
-      {pendingBills.length === 0 && !errorMessage && (
-        <div className="mt-3"></div>
-      )}
+    {pendingBills.length === 0 && !errorMessage}
     </div>
   );
 };

@@ -85,3 +85,12 @@ export const fetchClients = async (): Promise<{ id: number; name: string }[]> =>
     throw error;
   }
 };
+
+export const fetchCategories = async (): Promise<string[]> => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/billing/categories`);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};

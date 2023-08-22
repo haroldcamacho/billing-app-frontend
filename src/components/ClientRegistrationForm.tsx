@@ -2,25 +2,32 @@ import React, { useState } from 'react';
 import { createClient } from '../services/api';
 
 const ClientRegistrationForm: React.FC = () => {
-  const [clientId, setClientId] = useState<number>(0);
-  const [clientName, setClientName] = useState<string>('');
-  const [registrationStatus, setRegistrationStatus] = useState<'success' | 'failure' | null>(null);
+  const [clientId, setClientId] = useState<number | ''>('');
+  const [clientName, setClientName] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleRegisterClient = async () => {
+    if (clientId === '' || clientId < 0 || !clientName) {
+      setErrorMessage('Please provide a valid client ID and name.');
+      return;
+    }
+
     try {
-      await createClient(clientId, clientName);
-      setRegistrationStatus('success');
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        console.error('Client registration failed:', error.message);
-        setRegistrationStatus('failure');
-      }
+      await createClient(Number(clientId), clientName);
+      setClientId('');
+      setClientName('');
+      setErrorMessage('');
+      // Display success message or navigate to a different page
+    } catch (error) {
+      console.error('Error registering client:', error);
+      setErrorMessage('Failed to register client.');
     }
   };
 
   return (
     <div className="container mt-4">
-      <h1 className="mb-3">Client Registration Form</h1>
+      <h1>Client Registration</h1>
+      {errorMessage && <div className="alert alert-danger mt-3">{errorMessage}</div>}
       <div className="mb-3">
         <h4>Client ID</h4>
         <input
@@ -28,7 +35,7 @@ const ClientRegistrationForm: React.FC = () => {
           className="form-control"
           placeholder="Client ID"
           value={clientId}
-          onChange={(e) => setClientId(Number(e.target.value))}
+          onChange={(e) => setClientId(e.target.value as number | '')}
         />
       </div>
       <div className="mb-3">
@@ -44,16 +51,6 @@ const ClientRegistrationForm: React.FC = () => {
       <button className="btn btn-primary" onClick={handleRegisterClient}>
         Register Client
       </button>
-      {registrationStatus === 'success' && (
-        <div className="alert alert-success mt-2" role="alert">
-          Client Registered Successfully!
-        </div>
-      )}
-      {registrationStatus === 'failure' && (
-        <div className="alert alert-danger mt-2" role="alert">
-          Client Registration Failed!
-        </div>
-      )}
     </div>
   );
 };
