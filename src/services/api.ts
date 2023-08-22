@@ -1,6 +1,5 @@
 import axios from 'axios';
-import { PendingBill } from '../models/Bill';
-const API_BASE_URL = 'http://localhost:5000';
+import { PendingBill } from '../models/Bill';const API_BASE_URL = 'http://localhost:5000';
 
 export const fetchPendingBills = async (clientId: number): Promise<PendingBill[]> => {
   try {
@@ -72,6 +71,15 @@ export const registerBill = async (clientId: number, category: string, period: n
 export const fetchBillsByClientId = async (clientId: number): Promise<PendingBill[]> => {
   try {
     const response = await axios.get(`${API_BASE_URL}/billing/client/${clientId}`);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const fetchClients = async (): Promise<{ id: number; name: string }[]> => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/billing/clients`);
     return response.data;
   } catch (error) {
     throw error;

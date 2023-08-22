@@ -1,18 +1,31 @@
-import React, { useState } from 'react';
-import { fetchBillsByClientId } from '../services/api';
+import React, { useState, useEffect } from 'react';
+import { fetchBillsByClientId, fetchClients } from '../services/api';
 import { PendingBill } from '../models/Bill';
 
 const ClientBillsList: React.FC = () => {
-  const [clientId, setClientId] = useState<number | ''>('');
+  const [selectedClientId, setSelectedClientId] = useState<number | ''>('');
+  const [availableClients, setAvailableClients] = useState<{ id: number; name: string }[]>([]);
   const [bills, setBills] = useState<PendingBill[]>([]);
   const [requestStatus, setRequestStatus] = useState<'success' | 'failure' | null>(null);
 
+  useEffect(() => {
+    const fetchAvailableClients = async () => {
+      try {
+        const clients = await fetchClients();
+        setAvailableClients(clients);
+      } catch (error) {
+        console.error('Fetching available clients failed:', (error as Error).message);
+      }
+    };
+    fetchAvailableClients();
+  }, []);
+
   const handleFetchBills = async () => {
     try {
-      if (clientId === '') {
+      if (selectedClientId === '') {
         return;
       }
-      const fetchedBills = await fetchBillsByClientId(Number(clientId));
+      const fetchedBills = await fetchBillsByClientId(Number(selectedClientId));
       setBills(fetchedBills);
       setRequestStatus('success');
     } catch (error: unknown) {
@@ -27,14 +40,19 @@ const ClientBillsList: React.FC = () => {
     <div className="container mt-4">
       <h1 className="mb-3">Client Bills List</h1>
       <div className="mb-3">
-        <h4>Client ID</h4>
-        <input
-          type="number"
+        <h4>Select Client</h4>
+        <select
           className="form-control"
-          placeholder="Client ID"
-          value={clientId}
-          onChange={(e) => setClientId(e.target.value as number | '')}
-        />
+          value={selectedClientId}
+          onChange={(e) => setSelectedClientId(e.target.value as number | '')}
+        >
+          <option value="">Select a client</option>
+          {availableClients.map((client) => (
+            <option key={client.id} value={client.id}>
+              {client.name}
+            </option>
+          ))}
+        </select>
       </div>
       <button className="btn btn-primary" onClick={handleFetchBills}>
         Fetch Bills
@@ -53,7 +71,7 @@ const ClientBillsList: React.FC = () => {
       )}
       {requestStatus === 'success' && bills.length === 0 && (
         <div className="alert alert-info mt-2" role="alert">
-          No bills found for this client ID.
+          No bills found for this client.
         </div>
       )}
       {requestStatus === 'failure' && (

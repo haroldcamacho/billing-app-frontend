@@ -1,4 +1,3 @@
-// components/BillRegistrationForm.tsx
 import React, { useState } from 'react';
 import { registerBill } from '../services/api';
 

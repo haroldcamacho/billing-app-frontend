@@ -6,7 +6,7 @@ import Home from './components/Home';
 import PendingBillsView from './components/PendingBillsView';
 import ClientRegistrationForm from './components/ClientRegistrationForm';
 import BillsByCategoryForm from './components/BillsByCategory';
-import BillRegistrationForm from './components/BillRegistrationForm'; // Import the new component
+import BillRegistrationForm from './components/BillRegistrationForm'; 
 import ClientBillsList from './components/ClientBillsList';
 
 function App() {
