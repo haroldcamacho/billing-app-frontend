@@ -94,3 +94,12 @@ export const fetchCategories = async (): Promise<string[]> => {
     throw error;
   }
 };
+
+export const fetchUniquePendingDates = async (): Promise<number[]> => {
+  try {
+    const response = await axios.get<number[]>(`${API_BASE_URL}/billing/unique-pending-dates`);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};

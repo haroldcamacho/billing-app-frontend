@@ -1,70 +1,105 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import { payBill, fetchPendingBills } from '../services/api';
+import { fetchClients, fetchCategories, fetchUniquePendingDates, payBill, fetchPendingBills } from '../services/api';
 import { setBills } from '../store/billingSlice';
+import { PendingBill } from '../models/Bill';
 
 const BillPaymentForm: React.FC = () => {
   const dispatch = useDispatch();
-  const [clientId, setClientId] = useState<number>(0);
-  const [category, setCategory] = useState<string>('');
-  const [period, setPeriod] = useState<number>(0);
+  const [clients, setClients] = useState<{ id: number; name: string }[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [pendingDates, setPendingDates] = useState<number[]>([]);
+  const [selectedClient, setSelectedClient] = useState<number | ''>('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [selectedTimePeriod, setSelectedTimePeriod] = useState<number | ''>('');
   const [paymentStatus, setPaymentStatus] = useState<'success' | 'failure' | null>(null);
 
+  useEffect(() => {
+    const fetchFormData = async () => {
+      try {
+        const clientData = await fetchClients();
+        setClients(clientData);
+
+        const categoryData = await fetchCategories();
+        setCategories(categoryData);
+
+        const pendingDateData = await fetchUniquePendingDates();
+        setPendingDates(pendingDateData);
+      } catch (error) {
+        console.error('Error fetching form data:', error);
+      }
+    };
+
+    fetchFormData();
+  }, []);
+
   const handlePayBill = async () => {
+    if (!selectedClient || !selectedCategory || !selectedTimePeriod) {
+      setPaymentStatus('failure');
+      return;
+    }
+
     try {
-      await payBill(clientId, category, period);
-      const updatedBills = await fetchPendingBills(clientId);
+      await payBill(Number(selectedClient), selectedCategory, Number(selectedTimePeriod));
+      const updatedBills: PendingBill[] = await fetchPendingBills(Number(selectedClient));
       dispatch(setBills(updatedBills));
       setPaymentStatus('success');
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        console.error('Payment failed:', error.message);
-        setPaymentStatus('failure');
-      }
+    } catch (error) {
+      console.error('Payment failed:', error);
+      setPaymentStatus('failure');
     }
   };
-
-  useEffect(() => {
-    if (paymentStatus) {
-      const timeout = setTimeout(() => {
-        setPaymentStatus(null);
-      }, 5000); 
-      return () => clearTimeout(timeout);
-    }
-  }, [paymentStatus]);
 
   return (
     <div className="container mt-4">
       <h1 className="mb-3">Pay Bill Form</h1>
-      <h4>Client ID</h4>
       <div className="mb-3">
-        <input
-          type="text"
+        <label htmlFor="clientDropdown">Select Client:</label>
+        <select
+          id="clientDropdown"
           className="form-control"
-          placeholder="Client ID"
-          value={clientId}
-          onChange={(e) => setClientId(Number(e.target.value))}
-        />
+          value={selectedClient}
+          onChange={(e) => setSelectedClient(Number(e.target.value))}
+        >
+          <option value="">Select a client</option>
+          {clients.map((client) => (
+            <option key={client.id} value={client.id}>
+              {client.name}
+            </option>
+          ))}
+        </select>
       </div>
       <div className="mb-3">
-        <h4>Category</h4>
-        <input
-          type="text"
+        <label htmlFor="categoryDropdown">Select Category:</label>
+        <select
+          id="categoryDropdown"
           className="form-control"
-          placeholder="Category"
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-        />
+          value={selectedCategory}
+          onChange={(e) => setSelectedCategory(e.target.value)}
+        >
+          <option value="">Select a category</option>
+          {categories.map((category) => (
+            <option key={category} value={category}>
+              {category}
+            </option>
+          ))}
+        </select>
       </div>
-      <h4>Time Period (YYYYMM)</h4>
       <div className="mb-3">
-        <input
-          type="text"
+        <label htmlFor="timePeriodDropdown">Select Time Period (YYYYMM):</label>
+        <select
+          id="timePeriodDropdown"
           className="form-control"
-          placeholder="Period (YYYYMM)"
-          value={period}
-          onChange={(e) => setPeriod(Number(e.target.value))}
-        />
+          value={selectedTimePeriod}
+          onChange={(e) => setSelectedTimePeriod(Number(e.target.value))}
+          >
+          <option value="">Select a time period</option>
+          {pendingDates.map((date) => (
+            <option key={date} value={date}>
+              {date}
+            </option>
+          ))}
+        </select>
       </div>
       <button className="btn btn-primary" onClick={handlePayBill}>
         Pay Bill

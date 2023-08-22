@@ -1,17 +1,42 @@
-import React, { useState } from 'react';
-import { registerBill } from '../services/api';
+import React, { useState, useEffect } from 'react';
+import { registerBill, fetchClients, fetchCategories } from '../services/api';
 
 const BillRegistrationForm: React.FC = () => {
-  const [clientId, setClientId] = useState<number>(0);
+  const [clientId, setClientId] = useState<number | ''>('');
   const [category, setCategory] = useState<string>('');
   const [period, setPeriod] = useState<number>(0);
   const [amount, setAmount] = useState<number>(0);
   const [registrationStatus, setRegistrationStatus] = useState<'success' | 'failure' | null>(null);
-  const [registeredBill, setRegisteredBill] = useState<any | null>(null); 
+  const [registeredBill, setRegisteredBill] = useState<any | null>(null);
+  const [clients, setClients] = useState<{ id: number; name: string }[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
+
+  useEffect(() => {
+    const fetchClientData = async () => {
+      try {
+        const clientData = await fetchClients();
+        setClients(clientData);
+      } catch (error) {
+        console.error('Error fetching client data:', error);
+      }
+    };
+
+    const fetchCategoryData = async () => {
+      try {
+        const categoryData = await fetchCategories();
+        setCategories(categoryData);
+      } catch (error) {
+        console.error('Error fetching category data:', error);
+      }
+    };
+
+    fetchClientData();
+    fetchCategoryData();
+  }, []);
 
   const handleRegisterBill = async () => {
     try {
-      const response = await registerBill(clientId, category, period, amount);
+      const response = await registerBill(Number(clientId), category, period, amount);
       setRegisteredBill(response);
       setRegistrationStatus('success');
     } catch (error: unknown) {
@@ -27,23 +52,33 @@ const BillRegistrationForm: React.FC = () => {
       <h1 className="mb-3">Bill Registration Form</h1>
       <div className="mb-3">
         <h4>Client ID</h4>
-        <input
-          type="number"
-          className="form-control"
-          placeholder="Client ID"
+        <select
+          className="form-select"
           value={clientId}
           onChange={(e) => setClientId(Number(e.target.value))}
-        />
+        >
+          <option value="">Select a client</option>
+          {clients.map((client) => (
+            <option key={client.id} value={client.id}>
+              {client.name}
+            </option>
+          ))}
+        </select>
       </div>
       <div className="mb-3">
         <h4>Category</h4>
-        <input
-          type="text"
-          className="form-control"
-          placeholder="Category"
+        <select
+          className="form-select"
           value={category}
           onChange={(e) => setCategory(e.target.value)}
-        />
+        >
+          <option value="">Select a category</option>
+          {categories.map((cat) => (
+            <option key={cat} value={cat}>
+              {cat}
+            </option>
+          ))}
+        </select>
       </div>
       <div className="mb-3">
         <h4>Period (YYYYMM)</h4>
